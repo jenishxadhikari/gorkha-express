@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
   static handler(error: ApiError, res: Response) {
     return res.status(error.statusCode).json({
-      success: true,
+      success: false,
       message: error.message,
     });
   }

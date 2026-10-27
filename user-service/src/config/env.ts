@@ -15,6 +15,13 @@ const envSchema = z.object({
 
   DATABASE_URL: z.url({ error: "Database url is required." }),
   REDIS_URL: z.url({ error: "Redis url is required." }),
+
+  OTP_TTL: z.coerce.number().default(300),
+  OTP_RATE_MAX_PER_HOUR: z.coerce.number().default(5),
+  ATTEMPT_RATE_MAX_PER_HOUR: z.coerce.number().default(5),
+  OTP_HMAC_SECRET: z.string().length(64, { error: "HMAC Secret is required." }),
+
+  RESEND_API_KEY: z.string().nonempty({error: "Resend Api Key is required."})
 });
 
 export const env = envSchema.parse(process.env);
