@@ -21,7 +21,20 @@ const envSchema = z.object({
   ATTEMPT_RATE_MAX_PER_HOUR: z.coerce.number().default(5),
   OTP_HMAC_SECRET: z.string().length(64, { error: "HMAC Secret is required." }),
 
-  RESEND_API_KEY: z.string().nonempty({error: "Resend Api Key is required."})
+  RESEND_API_KEY: z.string().nonempty({ error: "Resend Api Key is required." }),
+
+  ACCESS_TOKEN_SECRET: z
+    .string()
+    .length(64, { error: "Access token secret is required." }),
+  REFRESH_TOKEN_SECRET: z
+    .string()
+    .length(128, { error: "Refresh token secret is required." }),
+  ACCESS_TOKEN_EXPIRE: z.string().default("5m"),
+  REFRESH_TOKEN_EXPIRE: z.string().default("7d"),
+  ACCESS_TOKEN_EXPIRE_SEC: z.coerce.number().default(900),
+  REFRESH_TOKEN_EXPIRE_SEC: z.coerce.number().default(604800),
+
+  REDIS_USER_TTL: z.coerce.number().default(86400)
 });
 
 export const env = envSchema.parse(process.env);
