@@ -24,6 +24,15 @@ const envSchema = z.object({
   OTP_TTL: z.coerce.number().default(300),
 
   RESEND_API_KEY: z.string().nonempty({ error: "Resend api key is required." }),
+
+  ACCESS_TOKEN_SECRET: z.string().length(64, {error: "Access token secret is required."}),
+  REFRESH_TOKEN_SECRET: z.string().length(128, {error: "Refresh token secret is required."}),
+  ACCESS_TOKEN_EXP: z.string().default('15m'),
+  REFRESH_TOKEN_EXP: z.string().default('7d'),
+  ACCESS_TOKEN_EXP_SEC: z.coerce.number().default(900),
+  REFRESH_TOKEN_EXP_SEC: z.coerce.number().default(604800),
+
+  REDIS_USER_TTL: z.coerce.number().default(86400)
 });
 
 export const env = envSchema.parse(process.env);

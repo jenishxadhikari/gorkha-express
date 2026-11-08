@@ -44,7 +44,24 @@ export type VerifyInput = {
   otpSessionId: string;
 };
 
+const loginSchema = z.object({
+  email: emailSchema,
+  password: z.string().trim().min(1, { error: "Password is required." }),
+});
+
+export type LoginInput = {
+  email: string
+  password: string
+  deviceId: string
+}
+
+export type RefreshInput = {
+  refreshToken: string
+  deviceId: string
+}
+
 export const AuthSchema = {
   registerSchema,
   verifySchema,
+  loginSchema,
 };

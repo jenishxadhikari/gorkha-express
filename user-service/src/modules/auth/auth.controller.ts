@@ -6,6 +6,7 @@ import { HttpErrors } from "../../lib/error.js";
 import { StatusCodes } from "../../config/http-status-codes.js";
 import { AuthService } from "./auth.service.js";
 import { env } from "../../config/env.js";
+import { deviceFingerprint } from "../../lib/device-fingerprint.js";
 
 function cookieOptions(maxAge: number): CookieOptions {
   return { httpOnly: true, secure: true, sameSite: "strict", maxAge };
@@ -43,7 +44,70 @@ const verify = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+const login = asyncHandler(async (req: Request, res: Response) => {
+  const validation = AuthSchema.loginSchema.safeParse(req.body);
+  if (!validation.success) {
+    throw new HttpErrors.BadRequestError();
+  }
+
+  const deviceId = deviceFingerprint(req);
+
+  const { accessToken, refreshToken } = await AuthService.login({
+    ...validation.data,
+    deviceId,
+  });
+
+  return res
+    .status(StatusCodes.OK)
+    .cookie(
+      "access_token",
+      accessToken,
+      cookieOptions(env.ACCESS_TOKEN_EXP_SEC * 1000),
+    )
+    .cookie(
+      "refresh_token",
+      refreshToken,
+      cookieOptions(env.REFRESH_TOKEN_EXP_SEC * 1000),
+    )
+    .json({
+      success: true,
+      message: "Logged in successfully.",
+    });
+});
+
+const refresh = asyncHandler(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refresh_token;
+  if (!refreshToken) {
+    throw new HttpErrors.BadRequestError();
+  }
+
+  const deviceId = deviceFingerprint(req);
+  const { newAccessToken, newRefreshToken } = await AuthService.refresh({
+    refreshToken,
+    deviceId,
+  });
+
+  return res
+    .status(StatusCodes.OK)
+    .cookie(
+      "access_token",
+      newAccessToken,
+      cookieOptions(env.ACCESS_TOKEN_EXP_SEC * 1000),
+    )
+    .cookie(
+      "refresh_token",
+      newRefreshToken,
+      cookieOptions(env.REFRESH_TOKEN_EXP_SEC * 1000),
+    )
+    .json({
+      success: true,
+      message: "Access and refresh token refreshed.",
+    });
+});
+
 export const AuthController = {
   register,
   verify,
+  login,
+  refresh,
 };
